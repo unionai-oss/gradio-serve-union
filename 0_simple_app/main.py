@@ -13,4 +13,4 @@ if __name__ == "__main__":
     demo.launch(server_name="0.0.0.0", server_port=8080)
 
 
-# union deploy apps 0_simple_app/app.pyy gradio-app
+# union deploy apps 0_simple_app/app.py gradio-app

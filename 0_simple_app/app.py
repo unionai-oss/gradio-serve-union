@@ -31,4 +31,4 @@ gradio_app = App(
     scaling_metric=ScalingMetric.Concurrency(2),
 )
 
-# union deploy apps app.py gradio-app
+# union deploy apps 0_simple_app/app.py gradio-app
