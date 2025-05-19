@@ -38,7 +38,7 @@ gradio_app = App(
     accelerator=L4,
     min_replicas=0,
     max_replicas=1,
-    scaledown_after=timedelta(minutes=2),
+    scaledown_after=timedelta(minutes=5),
     scaling_metric=ScalingMetric.Concurrency(2),
 )
 

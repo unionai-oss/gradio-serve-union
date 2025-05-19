@@ -1,7 +1,8 @@
-import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import gradio as gr
 from union_runtime import get_input
+import threading
+from transformers import TextIteratorStreamer
 
 # --------------------------
 # Load model path from Union artifact input
@@ -11,59 +12,16 @@ tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True).cuda()
 model.eval()
 
-# --------------------------
-# Chat function to handle user input and generate responses
-# --------------------------
-# def chat_fn(message, history):
-
-#     # --------------------------
-#     # Build prompt from history
-#     # --------------------------
-#     prompt = ""
-#     for msg in history:
-#         role = msg["role"]
-#         content = msg["content"]
-#         prompt += f"<|{role}|>\n{content}\n"
-#     prompt += f"<|user|>\n{message}\n<|assistant|>\n"
-
-#     # --------------------------
-#     # Generate response
-#     # --------------------------
-#     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
-#     outputs = model.generate(
-#         **inputs,
-#         max_new_tokens=1000,
-#         do_sample=True,
-#         top_p=0.9,
-#         temperature=0.3,
-#         eos_token_id=tokenizer.eos_token_id,
-#     )
-#     decoded = tokenizer.decode(outputs[0], skip_special_tokens=True)
-
-#     # Extract only the assistant's final response
-#     # if "<|assistant|>" in decoded:
-#     #     response = decoded.split("<|assistant|>")[-1].strip().split("<|")[0].strip()
-#     # else:
-#     #     response = decoded.strip()
-
-#     response = decoded.strip()
-
-#     return response
-
-import threading
-from transformers import TextIteratorStreamer
-import time
-
-import threading
-from transformers import TextIteratorStreamer
 
 def chat_fn(message, history):
+    """
+    Function to handle chat messages and generate responses.
+    """
+
     messages = [{"role": "user", "content": message}]
+
     prompt = tokenizer.apply_chat_template(
-        messages,
-        tokenize=False,
-        add_generation_prompt=True,
-        enable_thinking=True
+        messages, tokenize=False, add_generation_prompt=True, enable_thinking=True
     )
 
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
@@ -72,16 +30,19 @@ def chat_fn(message, history):
         tokenizer, skip_prompt=True, skip_special_tokens=True
     )
 
-    thread = threading.Thread(target=model.generate, kwargs={
-        "input_ids": inputs["input_ids"],
-        "attention_mask": inputs["attention_mask"],
-        "streamer": streamer,
-        "max_new_tokens": 2048,
-        "do_sample": True,
-        "top_p": 0.9,
-        "temperature": 0.3,
-        "eos_token_id": tokenizer.eos_token_id,
-    })
+    thread = threading.Thread(
+        target=model.generate,
+        kwargs={
+            "input_ids": inputs["input_ids"],
+            "attention_mask": inputs["attention_mask"],
+            "streamer": streamer,
+            "max_new_tokens": 2048,
+            "do_sample": True,
+            "top_p": 0.9,
+            "temperature": 0.3,
+            "eos_token_id": tokenizer.eos_token_id,
+        },
+    )
     thread.start()
 
     thinking_prefix = "🤔 **Thinking:**\n"
@@ -108,7 +69,6 @@ def chat_fn(message, history):
             yield answer_prefix + yielded_answer.strip()
 
 
-
 # --------------------------
 # Define Gradio interface
 # --------------------------
@@ -126,3 +86,6 @@ chat_interface = gr.ChatInterface(
 # --------------------------
 if __name__ == "__main__":
     chat_interface.launch(server_name="0.0.0.0", server_port=8080)
+
+# union deploy apps 1_llm_chat/app.py gradio-chat
+
