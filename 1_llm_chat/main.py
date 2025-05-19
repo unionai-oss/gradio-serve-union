@@ -11,21 +11,21 @@ tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True).cuda()
 model.eval()
 
-# Chat function using list-of-lists for history (as required by type="tuple")
+# Chat function compatible with Gradio type="messages"
 def chat_fn(message, history):
     if history is None:
         history = []
 
-    # Ensure format is list of lists
-    history = [list(pair) for pair in history]
-
-    # Construct prompt
+    # Construct prompt from history
     prompt = ""
-    for user_msg, bot_msg in history:
-        prompt += f"<|user|>\n{user_msg}\n<|assistant|>\n{bot_msg}\n"
+    for msg in history:
+        if msg["role"] == "user":
+            prompt += f"<|user|>\n{msg['content']}\n"
+        elif msg["role"] == "assistant":
+            prompt += f"<|assistant|>\n{msg['content']}\n"
     prompt += f"<|user|>\n{message}\n<|assistant|>\n"
 
-    # Tokenize and generate
+    # Tokenize and generate response
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
     outputs = model.generate(
         **inputs,
@@ -38,19 +38,20 @@ def chat_fn(message, history):
     decoded = tokenizer.decode(outputs[0], skip_special_tokens=True)
     response = decoded.split("<|assistant|>\n")[-1].strip()
 
-    # Append and return
-    history.append([message, response])
-    return response
+    # Append to history
+    history.append({"role": "user", "content": message})
+    history.append({"role": "assistant", "content": response})
+    return history
 
 # Define Gradio Chat Interface
 chat_interface = gr.ChatInterface(
     fn=chat_fn,
     title="Qwen3 Chatbot",
-    chatbot=gr.Chatbot(height=400, type='messages'),
     textbox=gr.Textbox(placeholder="Ask me anything...", container=True, scale=7),
     multimodal=False,
     theme="default",
-    type="messages",  # Very important to match return format
+    type="messages",
+    save_history=True,
 )
 
 # Launch app
