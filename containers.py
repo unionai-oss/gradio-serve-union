@@ -1,8 +1,8 @@
-from flytekit import ImageSpec, Resources
-# from union.actor import ActorEnvironment
+from flytekit import ImageSpec
 
 container_image = ImageSpec(
-     name="gradio-serve",
+    name="gradio-serve",
     requirements="requirements.txt",
     builder="union",
+    cuda="11.8",
 )
