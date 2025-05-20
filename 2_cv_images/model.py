@@ -1,26 +1,17 @@
+"""
+This task downloads the SmolVLM-Instruct model from Hugging Face and saves it to a specified directory.
+You can adjust the model to another from Hugging Face VLM by changing the model_name parameter.
+"""
+
 from union import Resources, task, Artifact, FlyteDirectory, current_context, ImageSpec
 from transformers import AutoProcessor, AutoModelForVision2Seq
 from pathlib import Path
 from typing import Annotated
+from containers import container_image
 
 # Create Union Artifact 
 SmolVLM = Artifact(name="SmolVLM-Instruct")
 
-# ----------------------------------------------------------------------
-# Define the container image
-# ----------------------------------------------------------------------
-container_image = ImageSpec(
-    name="gradio-serve",
-    packages=[
-        "union==0.1.181",
-        "flytekit==1.15.4",
-        "transformers==4.51.3",
-        "torch==2.5.1", 
-        "accelerate==1.6.0",
-        "pillow==11.2.1",
-    ],
-    builder="union",
-)
 
 # ----------------------------------------------------------------------
 # Download the model
@@ -28,7 +19,7 @@ container_image = ImageSpec(
 @task(
     container_image=container_image,
     cache=True,
-    cache_version="0.0017",  # Update cache version
+    cache_version="1.0",
     requests=Resources(cpu="2", mem="9Gi"),
 )
 def download_model(

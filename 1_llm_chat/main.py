@@ -1,3 +1,7 @@
+"""
+This creates a Gradio app that serves as a chat interface for the Qwen-3 model.
+The thinking and answer tokems are streamed separately, allowing for a more interactive experience.
+"""
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import gradio as gr
 from union_runtime import get_input
@@ -67,7 +71,6 @@ def chat_fn(message, history):
         else:
             yielded_answer += token
             yield answer_prefix + yielded_answer.strip()
-
 
 # --------------------------
 # Define Gradio interface

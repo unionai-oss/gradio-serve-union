@@ -1,25 +1,16 @@
+"""
+This file downloads the Qwen-3 model and saves it to a specified directory.
+You can adjust the model to another from Hugging Face by changing the model_name parameter.
+"""
+
 from union import Resources, task, Artifact, FlyteDirectory, current_context, ImageSpec
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from pathlib import Path
 from typing import Annotated
+from containers import container_image
 
 # Create Union Artifact 
 Qwen3Model8b = Artifact(name="qwen3-model")
-
-# ----------------------------------------------------------------------
-# Define the container image
-# ----------------------------------------------------------------------
-container_image = ImageSpec(
-     name="gradio-serve",
-    packages=[
-        "union==0.1.181",
-        "flytekit==1.15.4",
-        "transformers==4.51.3",
-        "torch==2.5.1", 
-        "accelerate==1.6.0"
-    ],
-    builder="union",
-)
 
 # ----------------------------------------------------------------------
 # Download the model
@@ -28,7 +19,7 @@ container_image = ImageSpec(
 @task(
     container_image=container_image,
     cache=True,
-    cache_version="0.0005",
+    cache_version="1.0",
     requests=Resources(cpu="2", mem="9Gi"),
 )
 def download_model(

@@ -1,3 +1,8 @@
+"""
+This is a simple Gradio app that takes a name and an intensity level as input,
+and returns a greeting message. The app is designed to be deployed using Union from app.py.
+"""
+
 import gradio as gr
 
 def greet(name, intensity):

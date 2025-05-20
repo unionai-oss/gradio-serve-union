@@ -1,3 +1,6 @@
+"""
+This serves as a deployment script for the SmolVLM-Instruct model with a Gradio app.
+"""
 import os
 from datetime import timedelta
 from union import Artifact, Resources

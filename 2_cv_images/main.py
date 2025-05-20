@@ -1,3 +1,8 @@
+"""
+This is a Gradio app for the SmolVLM-Instruct model.
+You can upload an image or take photo with webcam and get a vision-language response.
+"""
+
 import time
 from pathlib import Path
 

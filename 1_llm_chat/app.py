@@ -1,4 +1,7 @@
-import os
+"""
+This deployment script is for a Gradio app that serves as a chat interface for the Qwen-3 model.
+"""
+
 from datetime import timedelta
 from union import Artifact, Resources
 from union.app import App, Input, ScalingMetric
@@ -8,7 +11,7 @@ from containers import container_image
 # Point to your object detection model artifact
 Qwen3Model8b = Artifact(name="qwen3-model")
 
-# 
+# Define the Gradio app deployment
 gradio_app = App(
     name="gradio-chat",
     inputs=[
@@ -31,6 +34,5 @@ gradio_app = App(
     scaling_metric=ScalingMetric.Concurrency(2), # Auto-scaling based on concurrent user requests; 2 concurrent users per replica
     # requires_auth=False # Uncomment to make app public.
 )
-
 
 # union deploy apps 1_llm_chat/app.py gradio-chat

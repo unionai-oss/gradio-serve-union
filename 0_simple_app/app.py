@@ -1,32 +1,24 @@
 
-import os
+"""
+# Simple Gradio App Deployment Example
+"""
 from datetime import timedelta
-from union import Artifact, ImageSpec, Resources
-from union.app import App, Input, ScalingMetric
-from flytekit.extras.accelerators import GPUAccelerator, L4
+from union import Resources
+from union.app import App, ScalingMetric
 from containers import container_image
-
-# image_spec = ImageSpec(
-#     name="gradio-app",
-#     packages=[
-#         "gradio==5.29.0",
-#         "union-runtime>=0.1.18",
-#     ],
-#     builder="union",
-# )
 
 gradio_app = App(
     name="gradio-app",
-    container_image=container_image,
-    port=8080,
+    container_image=container_image, # image that contains the environment and dependencies needed to run the app
+    port=8080, # The port on which the app will be served
     include=["./main.py"],  # Include your gradio code
-    args=["python", "main.py"],
-    limits=Resources(cpu="2", mem="8Gi"),
-    requests=Resources(cpu="2", mem="8Gi"),
-    min_replicas=0,
-    max_replicas=1,
-    scaledown_after=timedelta(minutes=2),
-    scaling_metric=ScalingMetric.Concurrency(2),
+    args=["python", "main.py"], # Command to run your app inside the container
+    limits=Resources(cpu="2", mem="8Gi"), # Maximum resources allocated (CPU, memory, GPU) — hard limit
+    requests=Resources(cpu="2", mem="8Gi"), # Minimum resources requested from the scheduler — soft requirement
+    min_replicas=0, # Minimum number of instances (pods) running — allows scale-to-zero when idle
+    max_replicas=1, # Maximum number of instances — restricts auto-scaling to 1 replica
+    scaledown_after=timedelta(minutes=5), # Time to wait before scaling down when traffic is low
+    scaling_metric=ScalingMetric.Concurrency(2), # Auto-scaling based on concurrent user requests; 2 concurrent users per replica
     # requires_auth=False # Uncomment to make app public.
 )
 
