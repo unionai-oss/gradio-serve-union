@@ -4,22 +4,20 @@ from datetime import timedelta
 from union import Artifact, ImageSpec, Resources
 from union.app import App, Input, ScalingMetric
 from flytekit.extras.accelerators import GPUAccelerator, L4
+from containers import container_image
 
-# Point to your object detection model artifact
-# FRCCNFineTunedModel = Artifact(name="frccn_fine_tuned_model")
-
-image_spec = ImageSpec(
-    name="gradio-app",
-    packages=[
-        "gradio==5.29.0",
-        "union-runtime>=0.1.18",
-    ],
-    builder="union",
-)
+# image_spec = ImageSpec(
+#     name="gradio-app",
+#     packages=[
+#         "gradio==5.29.0",
+#         "union-runtime>=0.1.18",
+#     ],
+#     builder="union",
+# )
 
 gradio_app = App(
     name="gradio-app",
-    container_image=image_spec,
+    container_image=container_image,
     port=8080,
     include=["./main.py"],  # Include your gradio code
     args=["python", "main.py"],

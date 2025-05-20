@@ -1,25 +1,13 @@
 import os
 from datetime import timedelta
-from union import Artifact, ImageSpec, Resources
+from union import Artifact, Resources
 from union.app import App, Input, ScalingMetric
-from flytekit.extras.accelerators import GPUAccelerator, L4
+from flytekit.extras.accelerators import L4
+from containers import container_image
 
-# Point to your object detection model artifact
+# Point to VLM artifact
+
 SmolVLM = Artifact(name="SmolVLM-Instruct")
-
-image_spec = ImageSpec(
-    name="VLM-gradio",
-    packages=[
-        "gradio==5.29.0",
-        "torch==2.5.1",
-        "union-runtime>=0.1.18",
-        "transformers==4.51.3",
-        "accelerate==1.6.0",
-        "pillow==11.2.1"
-    ],
-    cuda="11.8",
-    builder="union",
-)
 
 gradio_app = App(
     name="vlm-gradio",
@@ -30,7 +18,7 @@ gradio_app = App(
             download=True,
         )
     ],
-    container_image=image_spec,
+    container_image=container_image,
     port=8080,
     include=["./main.py"],  # Include your gradio app
     args=["python", "main.py"],
@@ -42,6 +30,5 @@ gradio_app = App(
     scaledown_after=timedelta(minutes=10),
     scaling_metric=ScalingMetric.Concurrency(2),
 )
-
 
 # union deploy apps 2_cv_images/app.py vlm-gradio

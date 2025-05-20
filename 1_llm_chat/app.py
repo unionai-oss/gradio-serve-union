@@ -1,25 +1,14 @@
 import os
 from datetime import timedelta
-from union import Artifact, ImageSpec, Resources
+from union import Artifact, Resources
 from union.app import App, Input, ScalingMetric
-from flytekit.extras.accelerators import GPUAccelerator, L4
+from flytekit.extras.accelerators import L4
+from containers import container_image
 
 # Point to your object detection model artifact
 Qwen3Model8b = Artifact(name="qwen3-model")
 
-image_spec = ImageSpec(
-    name="gradio-chat",
-    packages=[
-        "gradio==5.29.0",
-        "torch==2.5.1",
-        "union-runtime>=0.1.18",
-        "transformers==4.51.3",
-        "accelerate==1.6.0",
-    ],
-    cuda="11.8",
-    builder="union",
-)
-
+# 
 gradio_app = App(
     name="gradio-chat",
     inputs=[
@@ -29,17 +18,17 @@ gradio_app = App(
             download=True,
         )
     ],
-    container_image=image_spec,
-    port=8080,
-    include=["./main.py"],  # Include your gradio app
-    args=["python", "main.py"],
-    limits=Resources(cpu="2", mem="8Gi", gpu="1"),
-    requests=Resources(cpu="2", mem="8Gi", gpu="1"),
-    accelerator=L4,
-    min_replicas=0,
-    max_replicas=1,
-    scaledown_after=timedelta(minutes=5),
-    scaling_metric=ScalingMetric.Concurrency(2),
+    container_image=container_image, # image that contains the environment and dependencies needed to run the app
+    port=8080, # The port on which the app will be served
+    include=["./main.py"],  # Include your gradio app code
+    args=["python", "main.py"], # Command to run your app inside the container
+    limits=Resources(cpu="2", mem="16Gi", gpu="1"),  # Maximum resources allocated (CPU, memory, GPU) — hard limit
+    requests=Resources(cpu="2", mem="16Gi", gpu="1"), # Minimum resources requested from the scheduler — soft requirement
+    accelerator=L4,  # Specifies the GPU type to use (e.g., NVIDIA L4 accelerator)
+    min_replicas=0, # Minimum number of instances (pods) running — allows scale-to-zero when idle
+    max_replicas=1, # Maximum number of instances — restricts auto-scaling to 1 replica
+    scaledown_after=timedelta(minutes=5), # Time to wait before scaling down when traffic is low
+    scaling_metric=ScalingMetric.Concurrency(2), # Auto-scaling based on concurrent user requests; 2 concurrent users per replica
     # requires_auth=False # Uncomment to make app public.
 )
 
