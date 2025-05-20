@@ -40,6 +40,7 @@ gradio_app = App(
     max_replicas=1,
     scaledown_after=timedelta(minutes=5),
     scaling_metric=ScalingMetric.Concurrency(2),
+    # requires_auth=False # Uncomment to make app public.
 )
 
 

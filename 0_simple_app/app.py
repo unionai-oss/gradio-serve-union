@@ -29,6 +29,7 @@ gradio_app = App(
     max_replicas=1,
     scaledown_after=timedelta(minutes=2),
     scaling_metric=ScalingMetric.Concurrency(2),
+    # requires_auth=False # Uncomment to make app public.
 )
 
 # union deploy apps 0_simple_app/app.py gradio-app
